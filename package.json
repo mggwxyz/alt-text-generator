@@ -1,8 +1,8 @@
 {
-  "name": "tanstack-start-example-basic-react-query",
-  "private": true,
+  "name": "alt-text-generator",
   "sideEffects": false,
   "type": "module",
+  "repository": "https://github.com/mggwxyz/alt-text-generator",
   "scripts": {
     "dev": "vite dev",
     "build": "vite build && tsc --noEmit",
