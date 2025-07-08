@@ -1,4 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, Link } from '@tanstack/react-router'
 import { FileDropzone } from '@/components/FileDropzone'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -10,6 +10,7 @@ import { generateAltText } from '../utils/generate-alt-text'
 import { useAppStore } from '@/store/store'
 import { useServerFn } from '@tanstack/react-start'
 import { Buffer } from 'buffer'
+import { Plus, Star } from 'lucide-react'
 
 export const Route = createFileRoute('/')({
   component: Home,
@@ -57,9 +58,25 @@ function Home() {
   });
 
   return (
-    <div className="min-h-screen bg-background">
-      <nav className="border-b px-6 py-4">
-        <h1 className="text-2xl font-bold">Alt Text Generator</h1>
+    <div className="min-h-screen bg-blue-200">
+      <nav className="border-b bg-white">
+        <div className="container mx-auto px-6 py-4 flex items-center justify-between">
+          <h1 className="text-2xl font-bold">Alt Text Generator</h1>
+          <div className="flex items-center gap-4">
+            <Button variant="outline" asChild>
+              <Link to="/" className="flex items-center gap-2 px-3 py-2 rounded-md hover:bg-muted transition-colors">
+                <Plus className="h-4 w-4" />
+                <span>New</span>
+              </Link>
+            </Button>
+            <Button variant="outline" asChild>
+            <Link to="/saved" className="flex items-center gap-2 px-3 py-2 rounded-md hover:bg-muted transition-colors">
+              <Star className="h-4 w-4" />
+                <span>Saved</span>
+              </Link>
+            </Button>
+          </div>
+        </div>
       </nav>
       
       <div className="container mx-auto px-6 py-8">

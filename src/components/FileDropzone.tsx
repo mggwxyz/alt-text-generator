@@ -46,8 +46,7 @@ export function FileDropzone({ onFileSelect, selectedFile, preview, onClear }: F
   }, [onFileSelect]);
 
   return (
-    <Card className="w-full">
-      <CardContent className="p-6">
+    <div className="w-full">
         {selectedFile && preview ? (
           <div className="space-y-4">
             <div className="relative">
@@ -98,7 +97,6 @@ export function FileDropzone({ onFileSelect, selectedFile, preview, onClear }: F
             </div>
           </div>
         )}
-      </CardContent>
-    </Card>
+    </div>
   );
 }
