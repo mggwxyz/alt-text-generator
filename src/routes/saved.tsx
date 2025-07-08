@@ -1,10 +1,13 @@
-import { createFileRoute, Link } from '@tanstack/react-router'
+import { createFileRoute } from '@tanstack/react-router'
 import { useState, useEffect } from 'react'
+import { Layout } from '@/components/Layout'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
-import { Trash2, Download, Edit, Plus, Star } from 'lucide-react'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { Trash2, Download, Edit, Copy, AlertTriangle } from 'lucide-react'
+import { toast } from 'sonner'
 
 export const Route = createFileRoute('/saved')({
   component: SavedImages,
@@ -14,16 +17,17 @@ interface SavedData {
   fileName: string
   fileSize: number
   altTextPrompt: string
-  variability: number
   shortAltText: string
   longAltText: string
   timestamp: string
+  imageData?: string // Optional for backward compatibility
 }
 
 function SavedImages() {
   const [savedData, setSavedData] = useState<SavedData[]>([])
   const [editingIndex, setEditingIndex] = useState<number | null>(null)
   const [editData, setEditData] = useState<SavedData | null>(null)
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
 
   useEffect(() => {
     const data = JSON.parse(localStorage.getItem('altTextHistory') || '[]')
@@ -34,6 +38,9 @@ function SavedImages() {
     const newData = savedData.filter((_, i) => i !== index)
     setSavedData(newData)
     localStorage.setItem('altTextHistory', JSON.stringify(newData))
+    
+    // Dispatch custom event to update count
+    window.dispatchEvent(new CustomEvent('savedItemsChanged'))
   }
 
   const handleEdit = (index: number) => {
@@ -47,6 +54,10 @@ function SavedImages() {
       newData[editingIndex] = editData
       setSavedData(newData)
       localStorage.setItem('altTextHistory', JSON.stringify(newData))
+      
+      // Dispatch custom event to update count (though count doesn't change, other data might)
+      window.dispatchEvent(new CustomEvent('savedItemsChanged'))
+      
       setEditingIndex(null)
       setEditData(null)
     }
@@ -61,7 +72,6 @@ function SavedImages() {
     const content = `File: ${item.fileName}
 Generated: ${new Date(item.timestamp).toLocaleString()}
 Prompt: ${item.altTextPrompt}
-Variability: ${item.variability}%
 
 Short Alt Text:
 ${item.shortAltText}
@@ -80,25 +90,65 @@ ${item.longAltText}
     URL.revokeObjectURL(url)
   }
 
+  const handleCopyText = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text)
+      toast.success('Text copied to clipboard!')
+    } catch (err) {
+      console.error('Failed to copy text:', err)
+      toast.error('Failed to copy text to clipboard')
+    }
+  }
+
+  const confirmDeleteAll = () => {
+    setSavedData([])
+    localStorage.setItem('altTextHistory', JSON.stringify([]))
+    
+    // Dispatch custom event to update count
+    window.dispatchEvent(new CustomEvent('savedItemsChanged'))
+    
+    toast.success('All saved images deleted')
+    setIsDeleteDialogOpen(false)
+  }
+
   return (
-    <div className="min-h-screen bg-background">
-      <nav className="border-b px-6 py-4">
-        <div className="container mx-auto flex items-center justify-between">
-          <h1 className="text-2xl font-bold">Saved Images</h1>
-          <div className="flex items-center gap-4">
-            <Link to="/" className="flex items-center gap-2 px-3 py-2 rounded-md hover:bg-muted transition-colors">
-              <Plus className="h-4 w-4" />
-              <span>New</span>
-            </Link>
-            <Link to="/saved" className="flex items-center gap-2 px-3 py-2 rounded-md hover:bg-muted transition-colors">
-              <Star className="h-4 w-4" />
-              <span>Saved</span>
-            </Link>
-          </div>
+    <Layout>
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <h1 className="text-3xl font-bold">Saved Images</h1>
+          {savedData.length > 0 && (
+            <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+              <DialogTrigger asChild>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  className="flex items-center gap-2"
+                >
+                  <AlertTriangle className="h-4 w-4" />
+                  Delete All
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Delete All Saved Images?</DialogTitle>
+                  <DialogDescription>
+                    This will permanently delete all {savedData.length} saved images and their alt text. 
+                    This action cannot be undone.
+                  </DialogDescription>
+                </DialogHeader>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button variant="destructive" onClick={confirmDeleteAll}>
+                    Delete All
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          )}
         </div>
-      </nav>
-      
-      <div className="container mx-auto px-6 py-8">
+
         {savedData.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-muted-foreground text-lg">No saved images yet.</p>
@@ -107,87 +157,116 @@ ${item.longAltText}
             </p>
           </div>
         ) : (
-          <div className="grid gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {savedData.map((item, index) => (
-              <Card key={index}>
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg">{item.fileName}</CardTitle>
-                    <div className="flex gap-2">
+              <Card key={index} className="overflow-hidden">
+                {item.imageData && (
+                  <div className="aspect-video relative">
+                    <img
+                      src={item.imageData}
+                      alt={item.fileName}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                )}
+                <CardHeader className="pb-2">
+                  <div className="flex items-start justify-between gap-2">
+                    <CardTitle className="text-sm font-medium truncate" title={item.fileName}>
+                      {item.fileName}
+                    </CardTitle>
+                    <div className="flex gap-1 flex-shrink-0">
                       <Button
-                        variant="outline"
+                        variant="ghost"
                         size="sm"
                         onClick={() => handleDownload(item)}
+                        className="h-6 w-6 p-0"
                       >
-                        <Download className="h-4 w-4" />
+                        <Download className="h-3 w-3" />
                       </Button>
                       <Button
-                        variant="outline"
+                        variant="ghost"
                         size="sm"
                         onClick={() => handleEdit(index)}
+                        className="h-6 w-6 p-0"
                       >
-                        <Edit className="h-4 w-4" />
+                        <Edit className="h-3 w-3" />
                       </Button>
                       <Button
-                        variant="destructive"
+                        variant="ghost"
                         size="sm"
                         onClick={() => handleDelete(index)}
+                        className="h-6 w-6 p-0 text-destructive hover:text-destructive"
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 className="h-3 w-3" />
                       </Button>
                     </div>
                   </div>
-                  <div className="text-sm text-muted-foreground">
-                    <p>Generated: {new Date(item.timestamp).toLocaleString()}</p>
-                    <p>Size: {(item.fileSize / 1024).toFixed(1)} KB</p>
-                    <p>Variability: {item.variability}%</p>
-                  </div>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="pt-0 space-y-3">
                   {editingIndex === index ? (
-                    <div className="space-y-4">
-                      <div className="space-y-2">
-                        <Label>Alt Text Prompt</Label>
+                    <div className="space-y-3">
+                      <div className="space-y-1">
+                        <Label className="text-xs">Alt Text Prompt</Label>
                         <Textarea
                           value={editData?.altTextPrompt || ''}
                           onChange={(e) => setEditData(prev => prev ? { ...prev, altTextPrompt: e.target.value } : null)}
-                          className="min-h-[60px]"
+                          className="min-h-[50px] text-xs"
                         />
                       </div>
-                      <div className="space-y-2">
-                        <Label>Short Alt Text</Label>
+                      <div className="space-y-1">
+                        <Label className="text-xs">Short Alt Text</Label>
                         <Textarea
                           value={editData?.shortAltText || ''}
                           onChange={(e) => setEditData(prev => prev ? { ...prev, shortAltText: e.target.value } : null)}
-                          className="min-h-[80px]"
+                          className="min-h-[60px] text-xs"
                         />
                       </div>
-                      <div className="space-y-2">
-                        <Label>Long Alt Text</Label>
+                      <div className="space-y-1">
+                        <Label className="text-xs">Long Alt Text</Label>
                         <Textarea
                           value={editData?.longAltText || ''}
                           onChange={(e) => setEditData(prev => prev ? { ...prev, longAltText: e.target.value } : null)}
-                          className="min-h-[120px]"
+                          className="min-h-[80px] text-xs"
                         />
                       </div>
                       <div className="flex gap-2">
-                        <Button onClick={handleSaveEdit}>Save Changes</Button>
-                        <Button variant="outline" onClick={handleCancelEdit}>Cancel</Button>
+                        <Button size="sm" onClick={handleSaveEdit}>Save</Button>
+                        <Button size="sm" variant="outline" onClick={handleCancelEdit}>Cancel</Button>
                       </div>
                     </div>
                   ) : (
-                    <div className="space-y-4">
+                    <div className="space-y-3">
                       <div>
-                        <Label className="text-sm font-medium">Prompt</Label>
-                        <p className="text-sm mt-1 p-2 bg-muted rounded">{item.altTextPrompt}</p>
+                        <Label className="text-xs font-medium text-muted-foreground">Prompt</Label>
+                        <p className="text-xs mt-1 p-2 bg-muted/50 rounded text-muted-foreground line-clamp-2">{item.altTextPrompt}</p>
                       </div>
                       <div>
-                        <Label className="text-sm font-medium">Short Alt Text</Label>
-                        <p className="text-sm mt-1 p-2 bg-muted rounded">{item.shortAltText}</p>
+                        <div className="flex items-center justify-between">
+                          <Label className="text-xs font-medium">Short Alt Text</Label>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleCopyText(item.shortAltText)}
+                            className="h-5 w-5 p-0"
+                          >
+                            <Copy className="h-3 w-3" />
+                          </Button>
+                        </div>
+                        <p className="text-xs mt-1 p-2 bg-muted/50 rounded line-clamp-3">{item.shortAltText}</p>
                       </div>
                       <div>
-                        <Label className="text-sm font-medium">Long Alt Text</Label>
-                        <p className="text-sm mt-1 p-2 bg-muted rounded">{item.longAltText}</p>
+                        <div className="flex items-center justify-between">
+                          <Label className="text-xs font-medium">Long Alt Text</Label>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleCopyText(item.longAltText)}
+                            className="h-5 w-5 p-0"
+                          >
+                            <Copy className="h-3 w-3" />
+                          </Button>
+                        </div>
+                        <p className="text-xs mt-1 p-2 bg-muted/50 rounded line-clamp-4">{item.longAltText}</p>
                       </div>
                     </div>
                   )}
@@ -197,6 +276,6 @@ ${item.longAltText}
           </div>
         )}
       </div>
-    </div>
+    </Layout>
   )
 }

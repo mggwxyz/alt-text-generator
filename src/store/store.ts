@@ -1,11 +1,11 @@
 import {createStore} from 'zustand/vanilla';
 import {useStore} from 'zustand';
+import { toast } from 'sonner';
 
 type State = {
   selectedFile: File | null;
   preview: string | null;
   altTextPrompt: string;
-  variability: number;
   shortAltText: string;
   longAltText: string;
   isGenerating: boolean;
@@ -15,7 +15,6 @@ type Action = {
   setSelectedFile: (file: File | null) => void;
   setPreview: (preview: string | null) => void;
   setAltTextPrompt: (prompt: string) => void;
-  setVariability: (variability: number) => void;
   setShortAltText: (text: string) => void;
   setLongAltText: (text: string) => void;
   setIsGenerating: (generating: boolean) => void;
@@ -29,7 +28,6 @@ export const appStore = createStore<State & Action>((set, get) => ({
   selectedFile: null,
   preview: null,
   altTextPrompt: 'Generate a short and long alt text for the following image',
-  variability: 50,
   shortAltText: '',
   longAltText: '',
   isGenerating: false,
@@ -37,7 +35,6 @@ export const appStore = createStore<State & Action>((set, get) => ({
   setSelectedFile: (file: File | null) => set({selectedFile: file}),
   setPreview: (preview: string | null) => set({preview}),
   setAltTextPrompt: (altTextPrompt: string) => set({altTextPrompt}),
-  setVariability: (variability: number) => set({variability}),
   setShortAltText: (shortAltText: string) => set({shortAltText}),
   setLongAltText: (longAltText: string) => set({longAltText}),
   setIsGenerating: (isGenerating: boolean) => set({isGenerating}),
@@ -64,13 +61,12 @@ export const appStore = createStore<State & Action>((set, get) => ({
     const { handleClearFile } = get();
     handleClearFile();
     set({
-      altTextPrompt: '',
-      variability: 50
+      altTextPrompt: ''
     });
   },
   
   handleSave: () => {
-    const { selectedFile, shortAltText, longAltText, altTextPrompt, variability, preview } = get();
+    const { selectedFile, shortAltText, longAltText, altTextPrompt, preview, handleReset } = get();
     
     if (!selectedFile || !shortAltText || !longAltText) return;
     
@@ -78,21 +74,23 @@ export const appStore = createStore<State & Action>((set, get) => ({
       fileName: selectedFile.name,
       fileSize: selectedFile.size,
       altTextPrompt,
-      variability,
       shortAltText,
       longAltText,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      imageData: preview // Include image data directly in the saved entry
     };
     
     const existingData = JSON.parse(localStorage.getItem('altTextHistory') || '[]');
     existingData.push(savedData);
     localStorage.setItem('altTextHistory', JSON.stringify(existingData));
     
-    if (preview) {
-      localStorage.setItem(`altTextImage_${Date.now()}`, preview);
-    }
+    // Dispatch custom event to update count
+    window.dispatchEvent(new CustomEvent('savedItemsChanged'));
     
-    alert('Image and alt text saved successfully!');
+    toast.success('Image and alt text saved successfully!');
+    
+    // Reset the form after successful save
+    handleReset();
   }
 }));
 

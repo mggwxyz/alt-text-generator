@@ -53,7 +53,7 @@ export function FileDropzone({ onFileSelect, selectedFile, preview, onClear }: F
               <img
                 src={preview}
                 alt="Preview"
-                className="max-w-full max-h-64 object-contain rounded-lg mx-auto"
+                className="max-w-full max-h-64 object-contain rounded-lg mx-auto border-1 border-gray-200"
               />
               <Button
                 variant="destructive"
@@ -61,7 +61,7 @@ export function FileDropzone({ onFileSelect, selectedFile, preview, onClear }: F
                 className="absolute top-2 right-2"
                 onClick={onClear}
               >
-                <X className="h-4 w-4" />
+                <X className="h-3 w-3" />
               </Button>
             </div>
             <div className="text-sm text-muted-foreground">

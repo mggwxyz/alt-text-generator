@@ -28,32 +28,20 @@ export const Route = createRootRouteWithContext<{
         content: 'width=device-width, initial-scale=1',
       },
       ...seo({
-        title:
-          'TanStack Start | Type-Safe, Client-First, Full-Stack React Framework',
-        description: `TanStack Start is a type-safe, client-first, full-stack React framework. `,
+        title: 'Alt Text Generator | AI-Powered Image Accessibility Tool',
+        description: 'Generate accurate and descriptive alt text for images using AI. Make your content accessible with our easy-to-use alt text generator that creates both short and long descriptions for any image.',
+        keywords: 'alt text generator, image accessibility, AI alt text, screen reader, web accessibility, image description, WCAG compliance',
       }),
     ],
     links: [
       { rel: 'stylesheet', href: appCss },
+      { rel: 'icon', type: 'image/png', href: '/favicon.png' },
       {
         rel: 'apple-touch-icon',
         sizes: '180x180',
         href: '/apple-touch-icon.png',
       },
-      {
-        rel: 'icon',
-        type: 'image/png',
-        sizes: '32x32',
-        href: '/favicon-32x32.png',
-      },
-      {
-        rel: 'icon',
-        type: 'image/png',
-        sizes: '16x16',
-        href: '/favicon-16x16.png',
-      },
-      { rel: 'manifest', href: '/site.webmanifest', color: '#fffff' },
-      { rel: 'icon', href: '/favicon.ico' },
+      { rel: 'manifest', href: '/site.webmanifest' },
     ],
   }),
   errorComponent: (props) => {

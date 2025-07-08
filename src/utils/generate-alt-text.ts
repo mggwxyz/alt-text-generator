@@ -10,11 +10,10 @@ export const generateAltText = createServerFn({method: 'POST'})
   return z.object({
     image: z.string(),
     prompt: z.string(),
-    variability: z.number(),
   }).parse(data)
 })
 .handler(async ({data}) => {
-  const { image, prompt, variability } = data;
+  const { image, prompt } = data;
 
   const { object } = await generateObject({
     model: openai('gpt-4o'),
