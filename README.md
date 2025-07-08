@@ -1,72 +1,46 @@
-# Welcome to TanStack.com!
+# Alt Text Generator
 
-This site is built with TanStack Router!
+An AI-powered web application that generates accessible alt text for images. Upload an image and get both concise and descriptive alt text to make your content more accessible.
 
-- [TanStack Router Docs](https://tanstack.com/router)
+## Features
 
-It's deployed automagically with Netlify!
+- **Drag & Drop Upload**: Easy image upload with preview
+- **AI-Powered Generation**: Uses OpenAI GPT-4 Vision to generate accurate alt text
+- **Dual Output**: Provides both short and long alt text descriptions
+- **Save & Manage**: Save generated alt text locally and manage your history
+- **Copy to Clipboard**: One-click copying of generated alt text
+- **Responsive Design**: Works seamlessly on desktop and mobile devices
 
-- [Netlify](https://netlify.com/)
+## Tech Stack
+
+- **Framework**: [TanStack Start](https://tanstack.com/start) - Full-stack React framework
+- **UI Components**: [shadcn/ui](https://ui.shadcn.com/) with [Tailwind CSS](https://tailwindcss.com/)
+- **State Management**: [Zustand](https://github.com/pmndrs/zustand)
+- **API Integration**: [AI SDK](https://sdk.vercel.ai/) with OpenAI GPT-4 Vision
+- **Routing**: [TanStack Router](https://tanstack.com/router)
+- **Data Fetching**: [TanStack Query](https://tanstack.com/query)
+- **Form Handling**: [React Hook Form](https://react-hook-form.com/) with [Zod](https://zod.dev/)
+- **Notifications**: [Sonner](https://sonner.emilkowal.ski/)
 
 ## Development
-
-From your terminal:
 
 ```sh
 pnpm install
 pnpm dev
 ```
 
-This starts your app in development mode, rebuilding assets on file changes.
+This starts the app in development mode on `http://localhost:3000`.
 
-## Editing and previewing the docs of TanStack projects locally
+## Environment Variables
 
-The documentations for all TanStack projects except for `React Charts` are hosted on [https://tanstack.com](https://tanstack.com), powered by this TanStack Router app.
-In production, the markdown doc pages are fetched from the GitHub repos of the projects, but in development they are read from the local file system.
+Create a `.env.local` file with:
 
-Follow these steps if you want to edit the doc pages of a project (in these steps we'll assume it's [`TanStack/form`](https://github.com/tanstack/form)) and preview them locally :
-
-1. Create a new directory called `tanstack`.
-
-```sh
-mkdir tanstack
+```
+OPENAI_API_KEY=your_openai_api_key_here
 ```
 
-2. Enter the directory and clone this repo and the repo of the project there.
+## Build
 
 ```sh
-cd tanstack
-git clone git@github.com:TanStack/tanstack.com.git
-git clone git@github.com:TanStack/form.git
+pnpm build
 ```
-
-> [!NOTE]
-> Your `tanstack` directory should look like this:
->
-> ```
-> tanstack/
->    |
->    +-- form/
->    |
->    +-- tanstack.com/
-> ```
-
-> [!WARNING]
-> Make sure the name of the directory in your local file system matches the name of the project's repo. For example, `tanstack/form` must be cloned into `form` (this is the default) instead of `some-other-name`, because that way, the doc pages won't be found.
-
-3. Enter the `tanstack/tanstack.com` directory, install the dependencies and run the app in dev mode:
-
-```sh
-cd tanstack.com
-pnpm i
-# The app will run on https://localhost:3000 by default
-pnpm dev
-```
-
-4. Now you can visit http://localhost:3000/form/latest/docs/overview in the browser and see the changes you make in `tanstack/form/docs`.
-
-> [!NOTE]
-> The updated pages need to be manually reloaded in the browser.
-
-> [!WARNING]
-> You will need to update the `docs/config.json` file (in the project's repo) if you add a new doc page!
