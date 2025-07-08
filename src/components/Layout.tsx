@@ -37,7 +37,7 @@ export function Layout({ children }: LayoutProps) {
       <nav className="border-b bg-white">
         <div className="container mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <img src="/favicon.png" alt="Alt Text Generator" className="w-8 h-8" />
+            <img src="/android-chrome-192x192.png" alt="Alt Text Generator" className="w-8 h-8" />
             <h1 className="text-xl sm:text-2xl font-bold">Alt Text Generator</h1>
           </div>
           <div className="flex items-center gap-2 sm:gap-4 ">
